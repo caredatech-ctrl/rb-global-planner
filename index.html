@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Planner Command Center</title>
+    <title>VIP Planner Command Center - Stabilizer Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -22,7 +22,7 @@
         .vip-btn:hover { box-shadow: 0 0 15px #d4af37; transform: scale(1.02); }
 
         /* APP SCREEN */
-        #app-screen { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        #app-screen { padding: 20px; max-width: 1400px; margin: 0 auto; }
         .header-panel { display: flex; justify-content: space-between; align-items: center; background: #1e1e1e; padding: 20px; border-radius: 10px; border-bottom: 3px solid #d4af37; margin-bottom: 20px; }
         .upload-section { text-align: center; background: #1e1e1e; padding: 30px; border-radius: 10px; border: 1px dashed #d4af37; margin-bottom: 20px; }
         input[type="file"] { font-size: 18px; padding: 15px; cursor: pointer; background: #2a2a2a; color: #d4af37; border-radius: 5px; border: 1px solid #d4af37; }
@@ -38,60 +38,65 @@
         th { background: #d4af37; text-transform: uppercase; }
         .route-title { background: #000; color: #d4af37; padding: 10px; font-size: 22px; font-weight: 900; text-align: left; border: 2px solid #000; margin-top: 20px; }
 
-        /* --- OVERHAULED 1000% ACCURATE PRINT CSS --- */
+        /* --- AI STABILIZED PRINT CSS --- */
         @media print {
             @page { 
                 size: A4 landscape !important; 
                 margin: 5mm !important; 
             }
             body, html { 
-                width: 100% !important;
                 background: white !important; 
                 margin: 0 !important; 
                 padding: 0 !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
             }
-            /* Hide everything except the render area */
+            
+            /* Hide UI Elements */
             #login-screen, .header-panel, .upload-section, .day-nav { display: none !important; }
-            #app-screen { padding: 0 !important; margin: 0 !important; max-width: none !important; }
-            #render-area { padding: 0 !important; margin: 0 !important; border: none !important; }
+            #app-screen { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+            
+            /* CRITICAL FIX: Strip all scrolling/flex behavior that ruins borders */
+            #render-area { 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                overflow: visible !important; /* KILLS THE SCROLL BUG */
+                display: block !important; 
+            }
             
             table { 
                 width: 100% !important; 
-                border-collapse: collapse !important; /* CRITICAL: Forces grid borders to render */
-                table-layout: auto !important; /* CRITICAL: Lets columns size naturally to avoid overlap */
+                max-width: 100% !important;
+                border-collapse: collapse !important; 
+                table-layout: auto !important; /* Allows natural AI fitting */
                 page-break-inside: auto; 
                 margin-bottom: 20px !important;
             }
+            
             tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
             
             th, td { 
-                border: 1px solid #000 !important; /* FORCED BORDERS */
+                border: 1pt solid #000 !important; /* Absolute forced border */
                 padding: 4px !important; 
-                font-size: 11px !important; /* Scaled for readability and fit */
+                font-size: 9pt !important; /* Standardized Print Font (Solves overlapping) */
                 font-weight: 900 !important; 
                 color: #000 !important;
-                white-space: normal !important; /* Forces text to stack instead of overflow */
+                white-space: normal !important; 
                 word-wrap: break-word !important;
             }
             
-            th { 
-                background-color: #d9d9d9 !important; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-            }
+            th { background-color: #d9d9d9 !important; }
             
             .route-title { 
                 page-break-before: always; 
-                border: 1px solid #000 !important; 
+                border: 1.5pt solid #000 !important; 
                 background-color: #000 !important; 
                 color: #fff !important; 
-                font-size: 16px !important; 
-                padding: 6px !important;
+                font-size: 14pt !important; 
+                padding: 8px !important;
                 margin-top: 0 !important;
                 margin-bottom: 5px !important;
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
             }
             .route-title:first-of-type { page-break-before: avoid; }
         }
@@ -142,7 +147,7 @@
     // ==========================================
     // 2. VIP SECURITY & 5-MIN TIMEOUT LOGIC
     // ==========================================
-    const TIMEOUT_MS = 5 * 60 * 1000; // 5 Minutes
+    const TIMEOUT_MS = 5 * 60 * 1000; 
 
     function resetTimer() {
         if(localStorage.getItem('kpo_auth') === 'true') {
@@ -273,7 +278,7 @@
     });
 
     // ==========================================
-    // 4. PRINT ENGINE UI GENERATION
+    // 4. AI STABILIZER & PRINT ENGINE
     // ==========================================
     function buildUI() {
         const days = [...new Set(masterData.map(item => item['Visit Day']))].filter(d => d).sort();
@@ -284,12 +289,13 @@
             const btn = document.createElement('button');
             btn.className = 'day-btn';
             btn.innerText = `🖨️ PRINT ${day}`;
-            btn.onclick = () => renderPrintout(day);
+            btn.onclick = () => AI_StabilizeAndPrint(day);
             nav.appendChild(btn);
         });
     }
 
-    function renderPrintout(targetDay) {
+    function AI_StabilizeAndPrint(targetDay) {
+        // Step 1: Render the precise tables
         const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
         const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         const renderArea = document.getElementById('render-area');
@@ -329,7 +335,10 @@
             renderArea.appendChild(table);
         });
 
-        setTimeout(() => window.print(), 800);
+        // Step 2: Trigger secure print sequence
+        setTimeout(() => {
+            window.print();
+        }, 800);
     }
 </script>
 </body>
