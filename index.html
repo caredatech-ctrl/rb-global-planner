@@ -3,83 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Command Center - Master Auto-Fit Engine</title>
+    <title>RECKITT ENGINE - VIP COMMAND CENTER</title>
     <!-- VIP Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* --- GLOBAL VIP THEME --- */
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #0f1015; color: #fff; }
+        /* --- GLOBAL VIP POPINK THEME --- */
+        :root {
+            --bg-dark: #0a050f;
+            --panel-bg: #140b1c;
+            --neon-pink: #ff007f;
+            --neon-purple: #9d00ff;
+            --text-main: #f0f0f0;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
         .hidden { display: none !important; }
         
         /* LOGIN SCREEN */
-        #login-screen { display: flex; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1c23 0%, #000000 100%); }
-        .login-box { background: #171923; padding: 40px; border-radius: 12px; border: 1px solid #d4af37; box-shadow: 0 0 30px rgba(212, 175, 55, 0.15); text-align: center; width: 380px; }
-        .login-box h2 { color: #d4af37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px; font-weight: 900; }
-        .vip-input { width: 85%; padding: 14px; margin: 10px 0; background: #222632; border: 1px solid #4a4a4a; color: #fff; border-radius: 5px; font-size: 16px; text-align: center; outline: none; }
-        .vip-input:focus { border-color: #d4af37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-        .vip-btn { width: 100%; padding: 16px; margin-top: 25px; background: linear-gradient(135deg, #d4af37, #9c7c14); border: none; color: #000; font-weight: 900; font-size: 18px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        .vip-btn:hover { box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); transform: scale(1.02); }
+        #login-screen { display: flex; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle, #1a0b26 0%, #000000 100%); }
+        .login-box { background: var(--panel-bg); padding: 50px 40px; border-radius: 15px; border: 1px solid var(--neon-pink); box-shadow: 0 0 40px rgba(255, 0, 127, 0.3), inset 0 0 20px rgba(157, 0, 255, 0.1); text-align: center; width: 400px; position: relative; overflow: hidden; }
+        .login-box::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, var(--neon-pink)); animation: rotate 4s linear infinite; z-index: 0; opacity: 0.5; }
+        .login-box::after { content: ''; position: absolute; inset: 3px; background: var(--panel-bg); border-radius: 12px; z-index: 1; }
+        .login-content { position: relative; z-index: 2; }
+        .login-box h2 { color: #fff; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; font-weight: 900; text-shadow: 0 0 10px var(--neon-pink); font-size: 24px; }
+        .login-box h4 { color: var(--neon-purple); margin-top: 0; margin-bottom: 30px; letter-spacing: 2px; }
+        
+        .vip-input { width: 85%; padding: 15px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-purple); color: #fff; border-radius: 8px; font-size: 16px; text-align: center; outline: none; transition: 0.3s; }
+        .vip-input:focus { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.5); }
+        .vip-btn { width: 100%; padding: 16px; margin-top: 25px; background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple)); border: none; color: #fff; font-weight: 900; font-size: 18px; border-radius: 8px; cursor: pointer; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.5); letter-spacing: 2px; }
+        .vip-btn:hover { box-shadow: 0 0 30px var(--neon-pink); transform: scale(1.05); }
+
+        /* VIP WELCOME ANIMATION SCREEN */
+        #welcome-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 1; transition: opacity 1s ease-out; }
+        .glowing-name { font-size: 4rem; color: #fff; text-transform: uppercase; font-weight: 900; text-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-purple), 0 0 80px var(--neon-pink); animation: pulseGlow 1.5s infinite alternate; text-align: center; margin: 0; }
+        .welcome-sub { color: var(--neon-pink); font-size: 1.5rem; letter-spacing: 10px; margin-top: 20px; animation: slideUp 1s ease-out; }
+
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        @keyframes pulseGlow { 0% { transform: scale(0.95); text-shadow: 0 0 10px var(--neon-pink); } 100% { transform: scale(1.05); text-shadow: 0 0 30px var(--neon-pink), 0 0 60px var(--neon-purple); } }
+        @keyframes slideUp { 0% { opacity: 0; transform: translateY(50px); } 100% { opacity: 1; transform: translateY(0); } }
 
         /* APP SCREEN */
         #app-screen { padding: 30px; max-width: 1600px; margin: 0 auto; }
-        .header-panel { display: flex; justify-content: space-between; align-items: center; background: #171923; padding: 25px; border-radius: 12px; border-bottom: 2px solid #d4af37; margin-bottom: 25px; }
-        .upload-section { text-align: center; background: #171923; padding: 40px; border-radius: 12px; border: 1px dashed #d4af37; margin-bottom: 30px; }
-        input[type="file"] { font-size: 18px; padding: 15px; cursor: pointer; background: #222632; color: #d4af37; border-radius: 5px; border: 1px solid #4a4a4a; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); padding: 25px; border-radius: 12px; border-bottom: 2px solid var(--neon-pink); margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .upload-section { text-align: center; background: var(--panel-bg); padding: 40px; border-radius: 12px; border: 1px dashed var(--neon-purple); margin-bottom: 30px; box-shadow: 0 0 20px rgba(157, 0, 255, 0.1); }
+        .upload-btn-secure { background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink); padding: 15px 40px; font-size: 18px; font-weight: 900; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .upload-btn-secure:hover { background: var(--neon-pink); color: #fff; box-shadow: 0 0 20px var(--neon-pink); }
+        input[type="file"] { display: none; }
         
         .day-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-        .day-card { background: #171923; border: 1px solid #333; border-radius: 10px; padding: 20px; text-align: center; }
-        .day-card h3 { color: #d4af37; font-size: 24px; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .action-btn { padding: 12px 10px; font-size: 16px; font-weight: 900; cursor: pointer; border: none; border-radius: 5px; transition: 0.2s; background: #d4af37; color: #000; width: 100%; margin-bottom: 10px; }
-        .action-btn:hover { background: #c29b2b; transform: translateY(-2px); }
+        .day-card { background: var(--panel-bg); border: 1px solid #333; border-radius: 12px; padding: 25px; text-align: center; transition: 0.3s; }
+        .day-card:hover { border-color: var(--neon-purple); box-shadow: 0 0 20px rgba(157,0,255,0.2); transform: translateY(-5px); }
+        .day-card h3 { color: #fff; text-shadow: 0 0 10px var(--neon-pink); font-size: 24px; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .action-btn { padding: 14px 10px; font-size: 15px; font-weight: 900; cursor: pointer; border: none; border-radius: 8px; transition: 0.2s; background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple)); color: #fff; width: 100%; margin-bottom: 10px; text-transform: uppercase; }
+        .action-btn:hover { box-shadow: 0 0 15px var(--neon-pink); }
 
-        /* --- THE MASTER PRINT DASHBOARD --- */
-        #print-dashboard { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f1015; z-index: 9999; display: flex; flex-direction: column; }
-        .dashboard-header { background: #171923; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d4af37; }
+        /* THE MASTER PRINT DASHBOARD */
+        #print-dashboard { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 5, 15, 0.95); backdrop-filter: blur(10px); z-index: 9999; display: flex; flex-direction: column; }
+        .dashboard-header { background: var(--panel-bg); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon-pink); }
         .dashboard-body { display: flex; flex: 1; overflow: hidden; }
         
-        /* Left Panel: Settings */
-        .settings-panel { width: 380px; background: #171923; padding: 20px; overflow-y: auto; border-right: 1px solid #333; }
+        .settings-panel { width: 380px; background: var(--panel-bg); padding: 20px; overflow-y: auto; border-right: 1px solid #333; }
         .setting-group { margin-bottom: 20px; }
-        .setting-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #d4af37; }
-        .setting-group input[type="range"] { width: 100%; }
-        .setting-group select { width: 100%; padding: 10px; background: #222632; color: #fff; border: 1px solid #4a4a4a; border-radius: 4px; font-weight: bold; }
+        .setting-group label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--neon-pink); }
+        .setting-group input[type="range"] { width: 100%; accent-color: var(--neon-purple); }
+        .setting-group select { width: 100%; padding: 10px; background: #222; color: #fff; border: 1px solid var(--neon-purple); border-radius: 4px; font-weight: bold; outline: none; }
         .col-checkbox { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 14px; cursor: pointer; }
         
-        /* Right Panel: Live Preview */
-        .preview-panel { flex: 1; background: #525659; padding: 30px; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
-        #live-preview-paper { background: #fff; color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); padding: 5mm; min-width: 297mm; min-height: 210mm; transform-origin: top center; }
+        .preview-panel { flex: 1; background: #2a2a2a; padding: 30px; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
+        #live-preview-paper { background: #fff; color: #000; box-shadow: 0 0 30px rgba(0,0,0,0.8); padding: 5mm; min-width: 297mm; min-height: 210mm; transform-origin: top center; }
         
-        /* Hardware Print Engine Iframe */
         #hardwarePrintFrame { display: none; }
     </style>
 </head>
 <body>
 
+    <!-- VIP WELCOME SCREEN -->
+    <div id="welcome-screen" class="hidden">
+        <h1 class="glowing-name">VIP WELCOME DILAWAR ALI</h1>
+        <div class="welcome-sub">INITIALIZING SECURE ENGINE...</div>
+    </div>
+
     <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-box">
-            <h2>Euro Store KPO Portal</h2>
-            <input type="text" id="username" class="vip-input" placeholder="USERNAME" autocomplete="off">
-            <input type="password" id="password" class="vip-input" placeholder="PASSWORD" autocomplete="off">
-            <button class="vip-btn" onclick="attemptLogin()">ENTER SECURE SYSTEM</button>
+            <div class="login-content">
+                <h2>RECKITT DAY PLANNER ENGINE</h2>
+                <h4>SECURE KPO PORTAL</h4>
+                <input type="text" id="username" class="vip-input" placeholder="USERNAME" autocomplete="off">
+                <input type="password" id="password" class="vip-input" placeholder="PASSWORD" autocomplete="off">
+                <button class="vip-btn" onclick="attemptLogin()">INITIATE LINK</button>
+            </div>
         </div>
     </div>
 
     <!-- MAIN APP SCREEN -->
     <div id="app-screen" class="hidden">
         <div class="header-panel">
-            <h1 style="color: #d4af37; margin: 0; font-weight: 900;">GLOBAL COMMAND CENTER</h1>
+            <h1 style="color: #fff; margin: 0; font-weight: 900; text-shadow: 0 0 10px var(--neon-pink);">RECKITT COMMAND CENTER</h1>
             <div>
-                <span style="font-weight: 900; font-size: 16px; margin-right: 15px;">DB: <span style="color: #00ff00;">ONLINE SYNCED</span></span>
-                <button onclick="logout('Manual Security Lock.')" style="padding: 10px 25px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 900;">LOCK CONSOLE</button>
+                <span style="font-weight: 900; font-size: 16px; margin-right: 15px; color: #aaa;">NETWORK: <span style="color: #00ff00; text-shadow: 0 0 10px #00ff00;">LIVE</span></span>
+                <button onclick="logout('Console Locked.')" style="padding: 10px 25px; background: transparent; color: #ff4444; border: 2px solid #ff4444; border-radius: 8px; cursor: pointer; font-weight: 900; transition: 0.3s;" onmouseover="this.style.background='#ff4444'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#ff4444';">LOCK CONSOLE</button>
             </div>
         </div>
 
         <div class="upload-section">
-            <h2 style="color: #d4af37; margin-top: 0; font-size: 28px;">MASTER OVERWRITE PROTOCOL</h2>
+            <h2 style="color: #fff; margin-top: 0; font-size: 28px; text-shadow: 0 0 10px var(--neon-purple);">GLOBAL DATABASE OVERWRITE</h2>
+            <p style="color: #888; margin-bottom: 20px;">Secondary verification required to upload new Master Data.</p>
+            <button class="upload-btn-secure" onclick="verifyAndUpload()">🔒 AUTHORIZE & UPLOAD NEW PLANNER</button>
             <input type="file" id="excel-file" accept=".xlsx, .xls">
         </div>
         <div id="day-nav" class="day-grid"></div>
@@ -88,48 +121,51 @@
     <!-- MASTER PRINT DASHBOARD -->
     <div id="print-dashboard" class="hidden">
         <div class="dashboard-header">
-            <h2 style="margin: 0; color: #d4af37;">🎛️ AI AUTO-FIT PRINT STABILIZER</h2>
+            <h2 style="margin: 0; color: #fff; text-shadow: 0 0 10px var(--neon-pink);">🎛️ AI PRINT STABILIZER (VIP MODE)</h2>
             <div>
-                <button onclick="closePrintDashboard()" style="padding: 10px 20px; background: #444; color: #fff; border: none; border-radius: 4px; margin-right: 10px; cursor: pointer; font-weight: bold;">CANCEL</button>
-                <button onclick="triggerHardwarePrint()" style="padding: 10px 30px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;">🖨️ PRINT SECURE REPORT</button>
+                <button onclick="closePrintDashboard()" style="padding: 10px 20px; background: transparent; color: #fff; border: 1px solid #fff; border-radius: 4px; margin-right: 10px; cursor: pointer; font-weight: bold;">CANCEL</button>
+                <button onclick="triggerHardwarePrint()" style="padding: 10px 30px; background: var(--neon-pink); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 0 15px var(--neon-pink);">🖨️ EXECUTE PRINT</button>
             </div>
         </div>
         <div class="dashboard-body">
             <div class="settings-panel">
                 
-                <div class="setting-group" style="background: #2a2d3a; padding: 15px; border-radius: 5px; border: 1px solid #d4af37;">
-                    <label style="color: #fff; font-size: 18px;">🎯 Select Route to Print</label>
+                <div class="setting-group" style="background: rgba(157,0,255,0.1); padding: 15px; border-radius: 8px; border: 1px solid var(--neon-purple);">
+                    <label style="color: #fff; font-size: 16px;">🎯 TARGET ROUTE</label>
                     <select id="route-filter" onchange="updatePreview()">
-                        <option value="ALL">ALL ROUTES FOR DAY</option>
-                        <!-- Routes will be injected here automatically -->
+                        <option value="ALL">PRINT ALL ROUTES FOR DAY</option>
                     </select>
                 </div>
 
                 <div class="setting-group">
                     <label>Grid Auto-Fit Mode</label>
                     <select id="set-layout" onchange="updatePreview()">
-                        <option value="fixed">AI Strict Confinement (Never Overflows Page)</option>
-                        <option value="auto">Natural Flow (Let browser decide width)</option>
+                        <option value="fixed">AI Strict Confinement (Locked Width)</option>
+                        <option value="auto">Natural Flow (Dynamic Width)</option>
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>Print Preview Scale (<span id="val-zoom">100</span>%)</label>
-                    <input type="range" id="set-zoom" min="50" max="150" value="100" step="5" oninput="updatePreview()">
+                    <label>Print Preview Scale (<span id="val-zoom">80</span>%)</label>
+                    <!-- Default set to 80% per your request -->
+                    <input type="range" id="set-zoom" min="50" max="150" value="80" step="5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
                     <label>Data Font Size (<span id="val-font">7.5</span>pt)</label>
+                    <!-- Default set to 7.5pt per your request -->
                     <input type="range" id="set-font" min="4" max="14" value="7.5" step="0.5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
                     <label>Cell Padding (<span id="val-pad">3</span>px)</label>
+                    <!-- Default set to 3px per your request -->
                     <input type="range" id="set-pad" min="1" max="10" value="3" oninput="updatePreview()">
                 </div>
                 <div class="setting-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 30px;">
-                    <input type="checkbox" id="set-wrap" onchange="updatePreview()" checked style="width: 20px; height: 20px;">
+                    <!-- Default UNCHECKED so text wraps naturally without breaking words -->
+                    <input type="checkbox" id="set-wrap" onchange="updatePreview()" style="width: 20px; height: 20px; accent-color: var(--neon-pink);">
                     <label style="margin: 0; color: #fff;">Prevent Text Wrapping (Excel Style)</label>
                 </div>
                 
-                <h3 style="color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px;">COLUMNS TO PRINT (Sorted via AI)</h3>
+                <h3 style="color: var(--neon-pink); border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px;">COLUMNS TO PRINT (AI Sorted)</h3>
                 <div id="column-toggles"></div>
             </div>
             
@@ -155,22 +191,10 @@
     let sortedColumns = [];
     let activeDay = "";
 
-    // STRICT ORDER
     const STRICT_COLUMN_ORDER = [
-        "Route Name",
-        "Customer Code",
-        "Mini",
-        "110g NCP OG",
-        "110g NCP SC/Cool",
-        "80g NCP SC/OG/ Cool",
-        "Harpic 225ml OG",
-        "Harpic 450ml TC",
-        "Veet Cream 18g/32g",
-        "Veet Lotion 40ml",
-        "Mortein 300 ml",
-        "LED Comp",
-        "30N",
-        "Coil"
+        "Route Name", "Customer Code", "Mini", "110g NCP OG", "110g NCP SC/Cool", 
+        "80g NCP SC/OG/ Cool", "Harpic 225ml OG", "Harpic 450ml TC", "Veet Cream 18g/32g", 
+        "Veet Lotion 40ml", "Mortein 300 ml", "LED Comp", "30N", "Coil"
     ];
 
     // ==========================================
@@ -185,11 +209,26 @@
         if(auto || (u === 'KPO' && p === '15075')) {
             localStorage.setItem('kpo_auth', 'true');
             document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            fetchLiveDatabase();
-            if(!auto) Swal.fire({ title: 'ACCESS GRANTED', text: 'VIP WELCOME DILAWAR ALI.', icon: 'success', background: '#171923', color: '#d4af37', confirmButtonColor: '#d4af37' });
+            
+            if(!auto) {
+                // Trigger 4-Second VIP Welcome Screen
+                const welcome = document.getElementById('welcome-screen');
+                welcome.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    welcome.style.opacity = '0';
+                    setTimeout(() => {
+                        welcome.classList.add('hidden');
+                        document.getElementById('app-screen').classList.remove('hidden');
+                        fetchLiveDatabase();
+                    }, 1000); // Wait for fade out
+                }, 4000); // Show for 4 seconds
+            } else {
+                document.getElementById('app-screen').classList.remove('hidden');
+                fetchLiveDatabase();
+            }
         } else {
-            Swal.fire({ title: 'ACCESS DENIED', text: 'Invalid Credentials.', icon: 'error', background: '#171923', color: '#ff4444' });
+            Swal.fire({ title: 'ACCESS DENIED', text: 'Intrusion Detected.', icon: 'error', background: '#140b1c', color: '#ff007f' });
         }
     }
 
@@ -199,24 +238,31 @@
     }
 
     // ==========================================
-    // 3. DATABASE SYNC & UI
+    // 3. SECURE UPLOAD VERIFICATION
     // ==========================================
-    async function fetchLiveDatabase() {
-        const { data } = await _supabase.from('day_planner').select('planner_data').eq('id', 1).single();
-        if(data && data.planner_data) {
-            masterData = data.planner_data;
-            if(masterData.length > 0) {
-                allColumns = Object.keys(masterData[0]);
-                sortAndPrepareColumns();
-                buildNavigation();
+    function verifyAndUpload() {
+        Swal.fire({
+            title: 'SECURITY CLEARANCE REQUIRED',
+            text: 'Enter Master Upload Password',
+            input: 'password',
+            background: '#140b1c',
+            color: '#fff',
+            confirmButtonColor: '#ff007f',
+            cancelButtonColor: '#333',
+            showCancelButton: true
+        }).then((result) => {
+            if(result.value === 'Aa135135%') {
+                document.getElementById('excel-file').click();
+            } else if(result.value) {
+                Swal.fire({title: 'DENIED', text: 'Incorrect Security Key', icon: 'error', background: '#140b1c', color: '#ff007f'});
             }
-        }
+        });
     }
 
     document.getElementById('excel-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        Swal.fire({ title: 'Overwriting Global DB...', background: '#171923', color: '#d4af37', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Syncing to Reckitt Network...', background: '#140b1c', color: '#ff007f', didOpen: () => Swal.showLoading() });
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -231,7 +277,7 @@
                 allColumns = Object.keys(masterData[0]);
                 sortAndPrepareColumns();
                 buildNavigation();
-                Swal.fire({ title: 'DB UPDATED', icon: 'success', background: '#171923', color: '#d4af37' });
+                Swal.fire({ title: 'NETWORK UPDATED', icon: 'success', background: '#140b1c', color: '#9d00ff', confirmButtonColor: '#9d00ff' });
             }
         };
         reader.readAsArrayBuffer(file);
@@ -256,9 +302,9 @@
             const card = document.createElement('div');
             card.className = 'day-card';
             card.innerHTML = `
-                <h3>${day} OPERATIONS</h3>
-                <button class="action-btn" onclick="openPrintDashboard('${day}')">⚙️ CONFIGURE & PRINT REPORT</button>
-                <button class="action-btn" style="background:#28a745; color:#fff;" onclick="exportExcel('${day}')">📊 EXPORT MASTER EXCEL</button>
+                <h3>${day} PROTOCOL</h3>
+                <button class="action-btn" onclick="openPrintDashboard('${day}')">⚙️ PREVIEW & PRINT</button>
+                <button class="action-btn" style="background: transparent; border: 1px solid #00ff00; color: #00ff00;" onclick="exportExcel('${day}')">📊 EXPORT EXCEL</button>
             `;
             nav.appendChild(card);
         });
@@ -279,17 +325,12 @@
         activeDay = day;
         document.getElementById('print-dashboard').classList.remove('hidden');
         
-        // Populate Single-Route Selector
         const routeSelect = document.getElementById('route-filter');
-        routeSelect.innerHTML = '<option value="ALL">ALL ROUTES FOR DAY</option>';
+        routeSelect.innerHTML = '<option value="ALL">PRINT ALL ROUTES FOR DAY</option>';
         const dayData = masterData.filter(row => row['Visit Day'] === activeDay);
         const uniqueRoutes = [...new Set(dayData.map(row => row['Route Code']))].sort();
-        
-        uniqueRoutes.forEach(r => {
-            if(r) routeSelect.innerHTML += `<option value="${r}">${r}</option>`;
-        });
+        uniqueRoutes.forEach(r => { if(r) routeSelect.innerHTML += `<option value="${r}">${r}</option>`; });
 
-        // Default Hidden Columns
         const defaultHidden = ["Visit Day", "Cycle route description", "MTD", "Route Code"];
         const colContainer = document.getElementById('column-toggles');
         colContainer.innerHTML = '';
@@ -300,7 +341,7 @@
             colContainer.innerHTML += `
                 <label class="col-checkbox">
                     <input type="checkbox" class="col-toggle" value="${col}" ${isChecked ? 'checked' : ''} onchange="updatePreview()"> 
-                    ${labelName}
+                    <span style="color:#fff;">${labelName}</span>
                 </label>
             `;
         });
@@ -328,12 +369,8 @@
         const selectedCols = Array.from(checkboxes).map(cb => cb.value);
 
         const dayData = masterData.filter(row => row['Visit Day'] === activeDay);
-        
-        // Filter by Single Route if selected
         let routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
-        if (selectedRouteFilter !== "ALL") {
-            routes = [selectedRouteFilter];
-        }
+        if (selectedRouteFilter !== "ALL") routes = [selectedRouteFilter];
         
         let html = generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode, preventWrap);
         
@@ -344,14 +381,13 @@
 
     function generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode, preventWrap) {
         let html = '';
+        const tableCSS = `width: 100%; max-width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: ${layoutMode};`;
         
-        const tableCSS = `
-            width: 100%; 
-            max-width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 25px; 
-            table-layout: ${layoutMode};
-        `;
+        // CRITICAL FIX FOR WORD BREAKING:
+        // By using word-break: normal and overflow-wrap: normal, words won't break in half (like "Mortei" / "n").
+        // They will safely wrap to the next line keeping the word intact if preventWrap is false.
+        const wrapCSS = preventWrap ? 'white-space: nowrap;' : 'white-space: normal; word-break: normal; overflow-wrap: normal;';
+        
         const cellCSS = `
             border: 1.5pt solid #000; 
             padding: ${pad}px; 
@@ -359,19 +395,15 @@
             font-weight: bold; 
             text-align: center; 
             font-family: Arial, sans-serif;
-            ${preventWrap ? 'white-space: nowrap;' : 'word-break: break-word; hyphens: auto; white-space: normal;'}
+            ${wrapCSS}
         `;
 
-        // AI Dynamic Column Resizer
         let colGroupHTML = '<colgroup>';
         selectedCols.forEach(col => {
             let colLower = col.toLowerCase();
-            let width = '4.5%'; // Default shrink for products/numbers to save space
-            if(colLower.includes('customer') || colLower.includes('name')) {
-                width = '14%'; // Max space for names to prevent squishing
-            } else if(colLower.includes('route')) {
-                width = '10%'; // Mid space for routes
-            }
+            let width = '4.5%'; 
+            if(colLower.includes('customer') || colLower.includes('name')) width = '14%'; 
+            else if(colLower.includes('route')) width = '10%'; 
             colGroupHTML += `<col style="width: ${width};">`;
         });
         colGroupHTML += '</colgroup>';
