@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Command Center - Master Print Engine</title>
+    <title>VIP Command Center - Master Auto-Fit Engine</title>
+    <!-- VIP Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,16 +41,16 @@
         .dashboard-body { display: flex; flex: 1; overflow: hidden; }
         
         /* Left Panel: Settings */
-        .settings-panel { width: 350px; background: #171923; padding: 20px; overflow-y: auto; border-right: 1px solid #333; }
+        .settings-panel { width: 380px; background: #171923; padding: 20px; overflow-y: auto; border-right: 1px solid #333; }
         .setting-group { margin-bottom: 20px; }
         .setting-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #d4af37; }
         .setting-group input[type="range"] { width: 100%; }
-        .setting-group select { width: 100%; padding: 10px; background: #222632; color: #fff; border: 1px solid #4a4a4a; border-radius: 4px; }
-        .col-checkbox { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 14px; }
+        .setting-group select { width: 100%; padding: 10px; background: #222632; color: #fff; border: 1px solid #4a4a4a; border-radius: 4px; font-weight: bold; }
+        .col-checkbox { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 14px; cursor: pointer; }
         
         /* Right Panel: Live Preview */
         .preview-panel { flex: 1; background: #525659; padding: 30px; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
-        #live-preview-paper { background: #fff; color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); padding: 10mm; min-width: 297mm; min-height: 210mm; transform-origin: top center; }
+        #live-preview-paper { background: #fff; color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); padding: 5mm; min-width: 297mm; min-height: 210mm; transform-origin: top center; }
         
         /* Hardware Print Engine Iframe */
         #hardwarePrintFrame { display: none; }
@@ -57,6 +58,7 @@
 </head>
 <body>
 
+    <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-box">
             <h2>Euro Store KPO Portal</h2>
@@ -66,6 +68,7 @@
         </div>
     </div>
 
+    <!-- MAIN APP SCREEN -->
     <div id="app-screen" class="hidden">
         <div class="header-panel">
             <h1 style="color: #d4af37; margin: 0; font-weight: 900;">GLOBAL COMMAND CENTER</h1>
@@ -82,37 +85,38 @@
         <div id="day-nav" class="day-grid"></div>
     </div>
 
+    <!-- MASTER PRINT DASHBOARD -->
     <div id="print-dashboard" class="hidden">
         <div class="dashboard-header">
-            <h2 style="margin: 0; color: #d4af37;">🎛️ AI PRINT STABILIZER & PREVIEW</h2>
+            <h2 style="margin: 0; color: #d4af37;">🎛️ AI AUTO-FIT PRINT STABILIZER</h2>
             <div>
                 <button onclick="closePrintDashboard()" style="padding: 10px 20px; background: #444; color: #fff; border: none; border-radius: 4px; margin-right: 10px; cursor: pointer; font-weight: bold;">CANCEL</button>
-                <button onclick="triggerHardwarePrint()" style="padding: 10px 30px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;">🖨️ PRINT FINAL REPORT</button>
+                <button onclick="triggerHardwarePrint()" style="padding: 10px 30px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;">🖨️ PRINT SECURE REPORT</button>
             </div>
         </div>
         <div class="dashboard-body">
             <div class="settings-panel">
                 <div class="setting-group">
-                    <label>Page Orientation</label>
-                    <select id="set-orientation" onchange="updatePreview()">
-                        <option value="landscape">A4 Landscape (Recommended)</option>
-                        <option value="portrait">A4 Portrait</option>
+                    <label>Grid Auto-Fit Mode</label>
+                    <select id="set-layout" onchange="updatePreview()">
+                        <option value="fixed">AI Strict Confinement (Never Overflows Page)</option>
+                        <option value="auto">Natural Flow (Might Overflow if wide)</option>
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>Data Font Size (<span id="val-font">8.5</span>pt)</label>
-                    <input type="range" id="set-font" min="5" max="16" value="8.5" step="0.5" oninput="updatePreview()">
+                    <label>Print Preview Scale (<span id="val-zoom">100</span>%)</label>
+                    <input type="range" id="set-zoom" min="50" max="150" value="100" step="5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
-                    <label>Cell Padding (<span id="val-pad">3</span>px)</label>
-                    <input type="range" id="set-pad" min="1" max="10" value="3" oninput="updatePreview()">
+                    <label>Data Font Size (<span id="val-font">7.5</span>pt)</label>
+                    <input type="range" id="set-font" min="4" max="14" value="7.5" step="0.5" oninput="updatePreview()">
                 </div>
-                <div class="setting-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 30px;">
-                    <input type="checkbox" id="set-wrap" onchange="updatePreview()" style="width: 20px; height: 20px;">
-                    <label style="margin: 0; color: #fff;">Prevent Text Wrapping</label>
+                <div class="setting-group">
+                    <label>Cell Padding (<span id="val-pad">2</span>px)</label>
+                    <input type="range" id="set-pad" min="1" max="10" value="2" oninput="updatePreview()">
                 </div>
                 
-                <h3 style="color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 5px;">COLUMNS TO PRINT (Sorted via AI)</h3>
+                <h3 style="color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px;">COLUMNS TO PRINT (Sorted via AI)</h3>
                 <div id="column-toggles"></div>
             </div>
             
@@ -122,6 +126,7 @@
         </div>
     </div>
 
+    <!-- INVISIBLE HARDWARE PRINT ENGINE -->
     <iframe id="hardwarePrintFrame"></iframe>
 
 <script>
@@ -137,7 +142,7 @@
     let sortedColumns = [];
     let activeDay = "";
 
-    // EXACT STRICT ORDER REQUIRED BY THE USER
+    // EXACT STRICT ORDER: Forces names to the front, data to the back.
     const STRICT_COLUMN_ORDER = [
         "Route Name",
         "Customer Code",
@@ -220,7 +225,6 @@
     });
 
     function sortAndPrepareColumns() {
-        // Sorts the columns physically based on the STRICT_COLUMN_ORDER. Anything missing goes to the end.
         sortedColumns = [...allColumns].sort((a, b) => {
             let posA = STRICT_COLUMN_ORDER.indexOf(a.trim());
             let posB = STRICT_COLUMN_ORDER.indexOf(b.trim());
@@ -256,13 +260,13 @@
     }
 
     // ==========================================
-    // 4. CUSTOM AI PRINT DASHBOARD ENGINE
+    // 4. THE AI AUTO-FIT DASHBOARD ENGINE
     // ==========================================
     function openPrintDashboard(day) {
         activeDay = day;
         document.getElementById('print-dashboard').classList.remove('hidden');
         
-        // Hide these specific columns by default, but KEEP Route Name and Customer Code ON.
+        // Default Hidden Columns: MTD and unneeded routes (BUT Customer Code and Route Name stay visible)
         const defaultHidden = ["Visit Day", "Cycle route description", "MTD", "Route Code"];
         
         const colContainer = document.getElementById('column-toggles');
@@ -287,36 +291,38 @@
     }
 
     function updatePreview() {
+        const layoutMode = document.getElementById('set-layout').value;
+        const zoomLevel = document.getElementById('set-zoom').value;
         const fSize = document.getElementById('set-font').value;
         const pad = document.getElementById('set-pad').value;
-        const orient = document.getElementById('set-orientation').value;
-        const preventWrap = document.getElementById('set-wrap').checked;
         
+        document.getElementById('val-zoom').innerText = zoomLevel;
         document.getElementById('val-font').innerText = fSize;
         document.getElementById('val-pad').innerText = pad;
 
-        // Get selected columns EXACTLY in the sorted order
         const checkboxes = document.querySelectorAll('.col-toggle:checked');
         const selectedCols = Array.from(checkboxes).map(cb => cb.value);
 
-        // Generate the exact HTML
         const dayData = masterData.filter(row => row['Visit Day'] === activeDay);
         const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         
-        let html = generateTableHTML(routes, dayData, selectedCols, fSize, pad, preventWrap);
+        let html = generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode);
         
-        // Render into live preview box
         const paper = document.getElementById('live-preview-paper');
+        paper.style.zoom = zoomLevel / 100;
         paper.innerHTML = html;
-        paper.style.width = orient === 'landscape' ? '297mm' : '210mm';
-        paper.style.minHeight = orient === 'landscape' ? '210mm' : '297mm';
     }
 
-    function generateTableHTML(routes, dayData, selectedCols, fSize, pad, preventWrap) {
+    function generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode) {
         let html = '';
         
+        // Core Table CSS
         const tableCSS = `
-            width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: auto;
+            width: 100%; 
+            max-width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 25px; 
+            table-layout: ${layoutMode};
         `;
         const cellCSS = `
             border: 1.5pt solid #000; 
@@ -325,8 +331,24 @@
             font-weight: bold; 
             text-align: center; 
             font-family: Arial, sans-serif;
-            ${preventWrap ? 'white-space: nowrap;' : 'word-wrap: break-word; white-space: normal;'}
+            word-wrap: break-word; 
+            word-break: break-word; 
+            white-space: normal;
         `;
+
+        // AI Column Resizer (Allocates intelligent widths to cells if using fixed layout)
+        let colGroupHTML = '<colgroup>';
+        selectedCols.forEach(col => {
+            let colLower = col.toLowerCase();
+            let width = '6%'; // Default shrink for numbers
+            if(colLower.includes('customer') || colLower.includes('name')) {
+                width = '14%'; // Max space for names
+            } else if(colLower.includes('route')) {
+                width = '10%'; // Mid space for routes
+            }
+            colGroupHTML += `<col style="width: ${width};">`;
+        });
+        colGroupHTML += '</colgroup>';
 
         routes.forEach(route => {
             const routeData = dayData.filter(row => row['Route Code'] === route);
@@ -334,7 +356,12 @@
             const cycleDesc = routeData[0]['Cycle route description'] || '';
             
             html += `<div style="font-size: 16pt; font-weight: bold; font-family: Arial, sans-serif; margin-bottom: 5px; page-break-before: always; text-align: left;">ROUTE ${route} : ${routeName} : ${cycleDesc}</div>`;
-            html += `<table style="${tableCSS}"><thead><tr>`;
+            html += `<table style="${tableCSS}">`;
+            
+            // Only inject the sizing grid if Layout is Fixed
+            if(layoutMode === 'fixed') html += colGroupHTML;
+            
+            html += `<thead><tr>`;
             
             selectedCols.forEach(col => {
                 html += `<th style="${cellCSS} background-color: #E0E0E0 !important; text-transform: uppercase;">${col.includes('__EMPTY') ? '' : col}</th>`;
@@ -351,25 +378,28 @@
             html += `</tbody></table>`;
         });
         
-        // Remove page break from very first title so it doesn't leave a blank page
         html = html.replace('page-break-before: always;', 'page-break-before: avoid;');
         return html;
     }
 
     // ==========================================
-    // 5. HARDWARE PRINT INJECTION
+    // 5. SECURE HARDWARE INJECTION
     // ==========================================
     function triggerHardwarePrint() {
-        const orient = document.getElementById('set-orientation').value;
         const content = document.getElementById('live-preview-paper').innerHTML;
+        const zoomLvl = document.getElementById('set-zoom').value / 100;
         
         let printHTML = `
         <!DOCTYPE html>
         <html>
         <head>
             <style>
-                @page { size: A4 ${orient}; margin: 5mm; }
-                body { margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: Arial, sans-serif; }
+                @page { size: A4 landscape; margin: 5mm; }
+                body { 
+                    margin: 0; padding: 0; background: #fff; color: #000; 
+                    -webkit-print-color-adjust: exact; print-color-adjust: exact; 
+                    zoom: ${zoomLvl}; 
+                }
                 table { page-break-inside: auto; }
                 tr { page-break-inside: avoid; page-break-after: auto; }
                 thead { display: table-header-group; }
