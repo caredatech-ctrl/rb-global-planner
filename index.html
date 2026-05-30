@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Planner Command Center - Enterprise Edition</title>
+    <title>VIP Planner Command Center - Master Print Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,15 +40,7 @@
         .btn-export { background: #28a745; color: #fff; }
         .btn-export:hover { background: #218838; transform: translateY(-2px); }
 
-        /* SCREEN TABLE VIEW (High-End Corporate Look) */
-        #render-area { margin-top: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 40px; background: #fff; color: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-size: 15px; font-weight: 700; }
-        th { background: #1e293b; color: #fff; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; }
-        tr:nth-child(even) { background-color: #f8fafc; }
-        .route-title { background: #d4af37; color: #000; padding: 12px 20px; font-size: 20px; font-weight: 900; text-align: left; border-radius: 8px 8px 0 0; display: flex; align-items: center; }
-        
-        /* HIDDEN PRINT IFRAME (The Secret to 1000% Accuracy) */
+        /* HIDDEN PRINT IFRAME */
         #printFrame { display: none; }
     </style>
 </head>
@@ -79,7 +71,9 @@
         </div>
 
         <div id="day-nav" class="day-grid"></div>
-        <div id="render-area"></div>
+        <div id="render-area" style="text-align: center; margin-top: 30px; font-size: 20px; color: #aaa; font-weight: bold;">
+            Select a day above to trigger the Master Print Engine or Export to Excel.
+        </div>
     </div>
 
     <iframe id="printFrame"></iframe>
@@ -94,6 +88,7 @@
 
     let masterData = [];
     let displayColumns = [];
+    // Kept the removal list exact to your specifications.
     const columnsToRemove = ["Route Name", "Cycle route description", "Visit Day", "Customer Code", "MTD"];
 
     // ==========================================
@@ -173,8 +168,6 @@
         document.getElementById('app-screen').classList.add('hidden');
         document.getElementById('username').value = '';
         document.getElementById('password').value = '';
-        document.getElementById('render-area').innerHTML = '';
-        document.getElementById('day-nav').innerHTML = '';
         masterData = [];
         Swal.fire({ title: 'SYSTEM SECURED', text: msg, icon: 'info', background: '#171923', color: '#fff', confirmButtonColor: '#d4af37' });
     }
@@ -237,7 +230,7 @@
             card.innerHTML = `
                 <h3>${day} OPERATIONS</h3>
                 <div class="action-group">
-                    <button class="action-btn btn-print" onclick="viewAndPrint('${day}')">🖨️ PDF / PRINT</button>
+                    <button class="action-btn btn-print" onclick="triggerIsolatedPrintEngine('${day}')">🖨️ PDF / PRINT</button>
                     <button class="action-btn btn-export" onclick="exportMasterExcel('${day}')">📊 EXPORT XLS</button>
                 </div>
             `;
@@ -250,7 +243,6 @@
         
         const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
         
-        // Filter rows to only contain required columns
         const filteredData = dayData.map(row => {
             let newRow = {};
             displayColumns.forEach(col => {
@@ -266,74 +258,74 @@
     }
 
     // ==========================================
-    // 5. THE AI ISOLATED PRINT ENGINE
+    // 5. THE 1000% ACCURATE ISOLATED PRINT ENGINE
     // ==========================================
-    function viewAndPrint(targetDay) {
-        renderScreenView(targetDay);
-        
-        // Give UI a millisecond to render on screen, then build isolated print frame
-        setTimeout(() => triggerIsolatedPrintEngine(targetDay), 300);
-    }
-
-    function renderScreenView(targetDay) {
-        const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
-        const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
-        const renderArea = document.getElementById('render-area');
-        renderArea.innerHTML = `<h2 style="color: #d4af37; text-align: center; font-size: 30px; margin-bottom: 30px;">PREVIEW: ${targetDay}</h2>`;
-
-        routes.forEach(route => {
-            const routeData = dayData.filter(row => row['Route Code'] === route);
-            
-            const title = document.createElement('div');
-            title.className = 'route-title';
-            title.innerText = `ROUTE CODE: ${route}`;
-            renderArea.appendChild(title);
-
-            const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const trHead = document.createElement('tr');
-            
-            displayColumns.forEach(col => {
-                const th = document.createElement('th');
-                th.innerText = col.includes('__EMPTY') ? '' : col; 
-                trHead.appendChild(th);
-            });
-            thead.appendChild(trHead);
-            table.appendChild(thead);
-
-            const tbody = document.createElement('tbody');
-            routeData.forEach(row => {
-                const tr = document.createElement('tr');
-                displayColumns.forEach(col => {
-                    const td = document.createElement('td');
-                    td.innerText = row[col] !== undefined ? row[col] : "";
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
-            table.appendChild(tbody);
-            renderArea.appendChild(table);
-        });
-    }
-
-    // THIS IS THE TRILLION-DOLLAR FIX: 100% ISOLATED CSS PRINTING
     function triggerIsolatedPrintEngine(targetDay) {
+        // Show loading indicator so user knows it is processing
+        Swal.fire({ title: 'Generating Exact A4 Layout...', text: 'Please wait...', background: '#171923', color: '#d4af37', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
         const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
         const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         
+        // --- THE MASTER CSS: MATCHING YOUR UPLOADED IMAGE ---
         let printHTML = `
         <!DOCTYPE html>
         <html>
         <head>
             <style>
-                @page { size: A4 landscape; margin: 5mm; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; }
-                table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 25px; page-break-inside: auto; }
-                tr { page-break-inside: avoid; page-break-after: auto; }
-                th, td { border: 1.5pt solid #000; padding: 4px; word-wrap: break-word; overflow-wrap: break-word; text-align: center; font-size: 10pt; font-weight: 900; }
-                th { background-color: #d9d9d9 !important; -webkit-print-color-adjust: exact; text-transform: uppercase; }
+                @page { 
+                    size: A4 landscape; 
+                    margin: 8mm 5mm; /* Small margins, strictly enforced hardware gap */
+                }
+                body { 
+                    font-family: 'Arial', sans-serif; /* Standard Excel Font */
+                    margin: 0; 
+                    padding: 0; 
+                    background: #fff; 
+                    color: #000; 
+                }
                 
-                .print-header { background: #000 !important; color: #fff !important; font-size: 14pt; font-weight: 900; padding: 8px; margin-top: 10px; border: 1.5pt solid #000; -webkit-print-color-adjust: exact; page-break-before: always; }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    table-layout: auto; /* Natural fitting */
+                    margin-bottom: 25px; 
+                    page-break-inside: auto; 
+                }
+                tr { 
+                    page-break-inside: avoid; 
+                    page-break-after: auto; 
+                }
+                
+                /* EXCEL GRID BORDERS AND BOLD DATA */
+                th, td { 
+                    border: 1.5pt solid #000 !important; /* Thick black lines like the image */
+                    padding: 6px 3px !important; 
+                    word-wrap: break-word; 
+                    overflow-wrap: break-word; 
+                    text-align: center; 
+                    font-size: 11pt !important; /* Large, readable size */
+                    font-weight: bold !important; /* FORCED BOLD ON ALL DATA */
+                    vertical-align: middle;
+                }
+                
+                /* EXCEL GRAY HEADERS */
+                th { 
+                    background-color: #E0E0E0 !important; /* Light Gray Background */
+                    -webkit-print-color-adjust: exact !important; 
+                    print-color-adjust: exact !important;
+                    text-transform: uppercase; 
+                }
+                
+                /* EXACT ROUTE TITLE FROM UPLOADED IMAGE */
+                .print-header { 
+                    font-size: 16pt !important; 
+                    font-weight: bold !important; 
+                    padding-bottom: 5px;
+                    margin-bottom: 5px; 
+                    text-align: left;
+                    page-break-before: always; 
+                }
                 .print-header:first-of-type { page-break-before: avoid; margin-top: 0; }
             </style>
         </head>
@@ -343,7 +335,13 @@
         routes.forEach(route => {
             const routeData = dayData.filter(row => row['Route Code'] === route);
             
-            printHTML += `<div class="print-header">DAY: ${targetDay} | ROUTE CODE: ${route}</div>`;
+            // Extract title elements safely
+            const routeName = routeData[0]['Route Name'] || '';
+            const cycleDesc = routeData[0]['Cycle route description'] || '';
+            
+            // Build the exact title format: ROUTE NGBRC01 : Zone A - Nasir : Chung
+            printHTML += `<div class="print-header">ROUTE ${route} : ${routeName} : ${cycleDesc}</div>`;
+            
             printHTML += `<table><thead><tr>`;
             
             // Headers
@@ -365,18 +363,19 @@
 
         printHTML += `</body></html>`;
 
-        // Inject into hidden iframe and print
+        // Inject into hidden iframe and trigger the physical print command
         const iframe = document.getElementById('printFrame');
         const doc = iframe.contentWindow.document;
         doc.open();
         doc.write(printHTML);
         doc.close();
 
-        // Allow DOM to load then trigger hardware print dialog
+        // Close sweetalert and print
         setTimeout(() => {
+            Swal.close();
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
-        }, 500);
+        }, 800);
     }
 </script>
 </body>
