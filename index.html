@@ -100,8 +100,8 @@
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>Data Font Size (<span id="val-font">8</span>pt)</label>
-                    <input type="range" id="set-font" min="5" max="16" value="8" step="0.5" oninput="updatePreview()">
+                    <label>Data Font Size (<span id="val-font">8.5</span>pt)</label>
+                    <input type="range" id="set-font" min="5" max="16" value="8.5" step="0.5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
                     <label>Cell Padding (<span id="val-pad">3</span>px)</label>
@@ -112,7 +112,7 @@
                     <label style="margin: 0; color: #fff;">Prevent Text Wrapping</label>
                 </div>
                 
-                <h3 style="color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 5px;">COLUMNS TO PRINT</h3>
+                <h3 style="color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 5px;">COLUMNS TO PRINT (Sorted via AI)</h3>
                 <div id="column-toggles"></div>
             </div>
             
@@ -134,7 +134,26 @@
 
     let masterData = [];
     let allColumns = [];
+    let sortedColumns = [];
     let activeDay = "";
+
+    // EXACT STRICT ORDER REQUIRED BY THE USER
+    const STRICT_COLUMN_ORDER = [
+        "Route Name",
+        "Customer Code",
+        "Mini",
+        "110g NCP OG",
+        "110g NCP SC/Cool",
+        "80g NCP SC/OG/ Cool",
+        "Harpic 225ml OG",
+        "Harpic 450ml TC",
+        "Veet Cream 18g/32g",
+        "Veet Lotion 40ml",
+        "Mortein 300 ml",
+        "LED Comp",
+        "30N",
+        "Coil"
+    ];
 
     // ==========================================
     // 2. VIP SECURITY & LOGIC
@@ -170,6 +189,7 @@
             masterData = data.planner_data;
             if(masterData.length > 0) {
                 allColumns = Object.keys(masterData[0]);
+                sortAndPrepareColumns();
                 buildNavigation();
             }
         }
@@ -191,12 +211,24 @@
             if(!error) {
                 masterData = jsonData;
                 allColumns = Object.keys(masterData[0]);
+                sortAndPrepareColumns();
                 buildNavigation();
                 Swal.fire({ title: 'DB UPDATED', icon: 'success', background: '#171923', color: '#d4af37' });
             }
         };
         reader.readAsArrayBuffer(file);
     });
+
+    function sortAndPrepareColumns() {
+        // Sorts the columns physically based on the STRICT_COLUMN_ORDER. Anything missing goes to the end.
+        sortedColumns = [...allColumns].sort((a, b) => {
+            let posA = STRICT_COLUMN_ORDER.indexOf(a.trim());
+            let posB = STRICT_COLUMN_ORDER.indexOf(b.trim());
+            if (posA === -1) posA = 999;
+            if (posB === -1) posB = 999;
+            return posA - posB;
+        });
+    }
 
     function buildNavigation() {
         const days = [...new Set(masterData.map(item => item['Visit Day']))].filter(d => d).sort();
@@ -230,13 +262,14 @@
         activeDay = day;
         document.getElementById('print-dashboard').classList.remove('hidden');
         
-        // Build Column Checkboxes (Default: Hide the 5 specific columns, keep ALL others including blanks)
-        const hideDefaults = ["Route Name", "Cycle route description", "Visit Day", "Customer Code", "MTD"];
+        // Hide these specific columns by default, but KEEP Route Name and Customer Code ON.
+        const defaultHidden = ["Visit Day", "Cycle route description", "MTD", "Route Code"];
+        
         const colContainer = document.getElementById('column-toggles');
         colContainer.innerHTML = '';
         
-        allColumns.forEach(col => {
-            const isChecked = !hideDefaults.includes(col.trim());
+        sortedColumns.forEach(col => {
+            const isChecked = !defaultHidden.includes(col.trim());
             const labelName = col.includes('__EMPTY') ? '[Data Column / No Header]' : col;
             colContainer.innerHTML += `
                 <label class="col-checkbox">
@@ -262,7 +295,7 @@
         document.getElementById('val-font').innerText = fSize;
         document.getElementById('val-pad').innerText = pad;
 
-        // Get selected columns
+        // Get selected columns EXACTLY in the sorted order
         const checkboxes = document.querySelectorAll('.col-toggle:checked');
         const selectedCols = Array.from(checkboxes).map(cb => cb.value);
 
@@ -282,9 +315,8 @@
     function generateTableHTML(routes, dayData, selectedCols, fSize, pad, preventWrap) {
         let html = '';
         
-        // The master CSS template injected into the HTML directly
         const tableCSS = `
-            width: 100%; border-collapse: collapse; margin-bottom: 25px;
+            width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: auto;
         `;
         const cellCSS = `
             border: 1.5pt solid #000; 
@@ -301,7 +333,7 @@
             const routeName = routeData[0]['Route Name'] || '';
             const cycleDesc = routeData[0]['Cycle route description'] || '';
             
-            html += `<div style="font-size: 16pt; font-weight: bold; font-family: Arial; margin-bottom: 5px; page-break-before: always; border-bottom: 2px solid #000;">ROUTE ${route} : ${routeName} : ${cycleDesc}</div>`;
+            html += `<div style="font-size: 16pt; font-weight: bold; font-family: Arial, sans-serif; margin-bottom: 5px; page-break-before: always; text-align: left;">ROUTE ${route} : ${routeName} : ${cycleDesc}</div>`;
             html += `<table style="${tableCSS}"><thead><tr>`;
             
             selectedCols.forEach(col => {
@@ -319,7 +351,7 @@
             html += `</tbody></table>`;
         });
         
-        // Remove page break from very first item
+        // Remove page break from very first title so it doesn't leave a blank page
         html = html.replace('page-break-before: always;', 'page-break-before: avoid;');
         return html;
     }
@@ -337,7 +369,7 @@
         <head>
             <style>
                 @page { size: A4 ${orient}; margin: 5mm; }
-                body { margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                body { margin: 0; padding: 0; background: #fff; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: Arial, sans-serif; }
                 table { page-break-inside: auto; }
                 tr { page-break-inside: avoid; page-break-after: auto; }
                 thead { display: table-header-group; }
