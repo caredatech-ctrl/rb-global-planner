@@ -3,103 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Planner Command Center - Stabilizer Edition</title>
+    <title>VIP Planner Command Center - Enterprise Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         /* --- VIP THEME (DARK & GOLD) --- */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #121212; color: #fff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #0f1015; color: #fff; }
         .hidden { display: none !important; }
         
         /* LOGIN SCREEN */
-        #login-screen { display: flex; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); }
-        .login-box { background: #1e1e1e; padding: 40px; border-radius: 12px; border: 2px solid #d4af37; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); text-align: center; width: 350px; }
-        .login-box h2 { color: #d4af37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px; }
-        .vip-input { width: 85%; padding: 12px; margin: 10px 0; background: #2a2a2a; border: 1px solid #d4af37; color: #fff; border-radius: 5px; font-size: 16px; outline: none; text-align: center; }
-        .vip-btn { width: 100%; padding: 15px; margin-top: 20px; background: linear-gradient(45deg, #d4af37, #aa8014); border: none; color: #000; font-weight: 900; font-size: 18px; border-radius: 5px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .vip-btn:hover { box-shadow: 0 0 15px #d4af37; transform: scale(1.02); }
+        #login-screen { display: flex; height: 100vh; justify-content: center; align-items: center; background: radial-gradient(circle, #1a1c23 0%, #000000 100%); }
+        .login-box { background: #171923; padding: 40px; border-radius: 12px; border: 1px solid #d4af37; box-shadow: 0 0 30px rgba(212, 175, 55, 0.15); text-align: center; width: 380px; }
+        .login-box h2 { color: #d4af37; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px; font-weight: 900; }
+        .vip-input { width: 85%; padding: 14px; margin: 10px 0; background: #222632; border: 1px solid #4a4a4a; color: #fff; border-radius: 5px; font-size: 16px; outline: none; text-align: center; transition: 0.3s; }
+        .vip-input:focus { border-color: #d4af37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .vip-btn { width: 100%; padding: 16px; margin-top: 25px; background: linear-gradient(135deg, #d4af37, #9c7c14); border: none; color: #000; font-weight: 900; font-size: 18px; border-radius: 5px; cursor: pointer; text-transform: uppercase; transition: 0.3s; letter-spacing: 1px; }
+        .vip-btn:hover { box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); transform: scale(1.02); }
 
         /* APP SCREEN */
-        #app-screen { padding: 20px; max-width: 1400px; margin: 0 auto; }
-        .header-panel { display: flex; justify-content: space-between; align-items: center; background: #1e1e1e; padding: 20px; border-radius: 10px; border-bottom: 3px solid #d4af37; margin-bottom: 20px; }
-        .upload-section { text-align: center; background: #1e1e1e; padding: 30px; border-radius: 10px; border: 1px dashed #d4af37; margin-bottom: 20px; }
-        input[type="file"] { font-size: 18px; padding: 15px; cursor: pointer; background: #2a2a2a; color: #d4af37; border-radius: 5px; border: 1px solid #d4af37; }
+        #app-screen { padding: 30px; max-width: 1600px; margin: 0 auto; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; background: #171923; padding: 25px; border-radius: 12px; border-bottom: 2px solid #d4af37; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .upload-section { text-align: center; background: #171923; padding: 40px; border-radius: 12px; border: 1px dashed #d4af37; margin-bottom: 30px; }
+        input[type="file"] { font-size: 18px; padding: 15px; cursor: pointer; background: #222632; color: #d4af37; border-radius: 5px; border: 1px solid #4a4a4a; width: 300px; }
         
-        .day-nav { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
-        .day-btn { padding: 15px 30px; font-size: 18px; font-weight: 900; cursor: pointer; background: #d4af37; color: #000; border: none; border-radius: 5px; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .day-btn:hover { background: #aa8014; transform: translateY(-2px); }
+        /* NAVIGATION CARDS */
+        .day-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .day-card { background: #171923; border: 1px solid #333; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .day-card h3 { color: #d4af37; font-size: 24px; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .action-group { display: flex; gap: 10px; justify-content: center; }
+        .action-btn { flex: 1; padding: 12px 10px; font-size: 16px; font-weight: 900; cursor: pointer; border: none; border-radius: 5px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-print { background: #d4af37; color: #000; }
+        .btn-print:hover { background: #c29b2b; transform: translateY(-2px); }
+        .btn-export { background: #28a745; color: #fff; }
+        .btn-export:hover { background: #218838; transform: translateY(-2px); }
 
-        /* SCREEN TABLE VIEW */
-        #render-area { width: 100%; background: #fff; border-radius: 8px; padding: 10px; margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; color: #000; }
-        th, td { border: 2px solid #000; padding: 8px; text-align: center; font-size: 16px; font-weight: 900; }
-        th { background: #d4af37; text-transform: uppercase; }
-        .route-title { background: #000; color: #d4af37; padding: 10px; font-size: 22px; font-weight: 900; text-align: left; border: 2px solid #000; margin-top: 20px; }
-
-        /* --- AI STABILIZED PRINT CSS --- */
-        @media print {
-            @page { 
-                size: A4 landscape !important; 
-                margin: 5mm !important; 
-            }
-            body, html { 
-                background: white !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
-            }
-            
-            /* Hide UI Elements */
-            #login-screen, .header-panel, .upload-section, .day-nav { display: none !important; }
-            #app-screen { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-            
-            /* CRITICAL FIX: Strip all scrolling/flex behavior that ruins borders */
-            #render-area { 
-                padding: 0 !important; 
-                margin: 0 !important; 
-                overflow: visible !important; /* KILLS THE SCROLL BUG */
-                display: block !important; 
-            }
-            
-            table { 
-                width: 100% !important; 
-                max-width: 100% !important;
-                border-collapse: collapse !important; 
-                table-layout: auto !important; /* Allows natural AI fitting */
-                page-break-inside: auto; 
-                margin-bottom: 20px !important;
-            }
-            
-            tr { page-break-inside: avoid; page-break-after: auto; }
-            thead { display: table-header-group; }
-            
-            th, td { 
-                border: 1pt solid #000 !important; /* Absolute forced border */
-                padding: 4px !important; 
-                font-size: 9pt !important; /* Standardized Print Font (Solves overlapping) */
-                font-weight: 900 !important; 
-                color: #000 !important;
-                white-space: normal !important; 
-                word-wrap: break-word !important;
-            }
-            
-            th { background-color: #d9d9d9 !important; }
-            
-            .route-title { 
-                page-break-before: always; 
-                border: 1.5pt solid #000 !important; 
-                background-color: #000 !important; 
-                color: #fff !important; 
-                font-size: 14pt !important; 
-                padding: 8px !important;
-                margin-top: 0 !important;
-                margin-bottom: 5px !important;
-            }
-            .route-title:first-of-type { page-break-before: avoid; }
-        }
+        /* SCREEN TABLE VIEW (High-End Corporate Look) */
+        #render-area { margin-top: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 40px; background: #fff; color: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-size: 15px; font-weight: 700; }
+        th { background: #1e293b; color: #fff; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        .route-title { background: #d4af37; color: #000; padding: 12px 20px; font-size: 20px; font-weight: 900; text-align: left; border-radius: 8px 8px 0 0; display: flex; align-items: center; }
+        
+        /* HIDDEN PRINT IFRAME (The Secret to 1000% Accuracy) */
+        #printFrame { display: none; }
     </style>
 </head>
 <body>
@@ -109,28 +59,30 @@
             <h2>Euro Store KPO Portal</h2>
             <input type="text" id="username" class="vip-input" placeholder="USERNAME" autocomplete="off">
             <input type="password" id="password" class="vip-input" placeholder="PASSWORD" autocomplete="off">
-            <button class="vip-btn" onclick="attemptLogin()">ENTER SYSTEM</button>
+            <button class="vip-btn" onclick="attemptLogin()">ENTER SECURE SYSTEM</button>
         </div>
     </div>
 
     <div id="app-screen" class="hidden">
         <div class="header-panel">
-            <h1 style="color: #d4af37; margin: 0;">GLOBAL PLANNER ENGINE</h1>
-            <div>
-                <span style="margin-right: 20px; font-weight: bold; font-size: 18px;">STATUS: <span style="color: #00ff00;">LIVE CONNECTED</span></span>
-                <button onclick="logout('Manual Logout.')" style="padding: 10px 20px; background: #ff3333; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;">LOGOUT</button>
+            <h1 style="color: #d4af37; margin: 0; font-weight: 900; letter-spacing: 1px;">GLOBAL COMMAND CENTER</h1>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span style="font-weight: 900; font-size: 16px;">DB: <span style="color: #00ff00; text-shadow: 0 0 5px #00ff00;">ONLINE SYNCED</span></span>
+                <button onclick="logout('Manual Security Lock.')" style="padding: 10px 25px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 900; transition: 0.2s;">LOCK CONSOLE</button>
             </div>
         </div>
 
         <div class="upload-section">
-            <h2 style="color: #d4af37; margin-top: 0;">MASTER DATABASE OVERWRITE</h2>
-            <p style="font-size: 16px; margin-bottom: 20px;">Uploading a new Excel file will instantly wipe the old schedule and replace it globally.</p>
+            <h2 style="color: #d4af37; margin-top: 0; font-size: 28px;">MASTER OVERWRITE PROTOCOL</h2>
+            <p style="font-size: 16px; margin-bottom: 25px; color: #aaa;">Upload Excel Planner. Legacy schedules will be purged globally.</p>
             <input type="file" id="excel-file" accept=".xlsx, .xls">
         </div>
 
-        <div id="day-nav" class="day-nav"></div>
+        <div id="day-nav" class="day-grid"></div>
         <div id="render-area"></div>
     </div>
+
+    <iframe id="printFrame"></iframe>
 
 <script>
     // ==========================================
@@ -181,7 +133,7 @@
                 title: 'ACCESS GRANTED',
                 text: 'VIP WELCOME DILAWAR ALI.',
                 icon: 'success',
-                background: '#1e1e1e',
+                background: '#171923',
                 color: '#d4af37',
                 confirmButtonColor: '#d4af37'
             }).then(() => {
@@ -192,11 +144,11 @@
         } else {
             Swal.fire({
                 title: 'ACCESS DENIED',
-                text: 'Invalid Credentials. Intrusion attempt logged.',
+                text: 'Invalid Credentials. System Locked.',
                 icon: 'error',
-                background: '#1e1e1e',
-                color: '#ff0000',
-                confirmButtonColor: '#ff0000'
+                background: '#171923',
+                color: '#ff4444',
+                confirmButtonColor: '#ff4444'
             });
         }
     }
@@ -224,11 +176,11 @@
         document.getElementById('render-area').innerHTML = '';
         document.getElementById('day-nav').innerHTML = '';
         masterData = [];
-        Swal.fire({ title: 'SYSTEM LOCKED', text: msg, icon: 'info', background: '#1e1e1e', color: '#fff', confirmButtonColor: '#d4af37' });
+        Swal.fire({ title: 'SYSTEM SECURED', text: msg, icon: 'info', background: '#171923', color: '#fff', confirmButtonColor: '#d4af37' });
     }
 
     // ==========================================
-    // 3. LIVE DATABASE SYNC (READ/WRITE)
+    // 3. LIVE DATABASE SYNC
     // ==========================================
     async function fetchLiveDatabase() {
         const { data, error } = await _supabase.from('day_planner').select('planner_data').eq('id', 1).single();
@@ -237,7 +189,7 @@
             if(masterData.length > 0) {
                 const allColumns = Object.keys(masterData[0]);
                 displayColumns = allColumns.filter(col => !columnsToRemove.includes(col.trim()));
-                buildUI();
+                buildNavigation();
             }
         }
     }
@@ -246,14 +198,7 @@
         const file = e.target.files[0];
         if (!file) return;
 
-        Swal.fire({ 
-            title: 'Uploading to Supabase...', 
-            text: 'Overwriting Global Database',
-            background: '#1e1e1e', 
-            color: '#d4af37', 
-            allowOutsideClick: false, 
-            didOpen: () => { Swal.showLoading() } 
-        });
+        Swal.fire({ title: 'Uplinking to Supabase...', background: '#171923', color: '#d4af37', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -268,45 +213,80 @@
                 masterData = jsonData;
                 const allColumns = Object.keys(masterData[0]);
                 displayColumns = allColumns.filter(col => !columnsToRemove.includes(col.trim()));
-                buildUI();
-                Swal.fire({ title: 'UPLOAD SUCCESS', text: 'Live Database Overwritten.', icon: 'success', background: '#1e1e1e', color: '#d4af37', confirmButtonColor: '#d4af37' });
+                buildNavigation();
+                Swal.fire({ title: 'GLOBAL OVERWRITE SUCCESSFUL', icon: 'success', background: '#171923', color: '#d4af37', confirmButtonColor: '#d4af37' });
             } else {
-                Swal.fire({ title: 'UPLOAD FAILED', text: error.message, icon: 'error', background: '#1e1e1e', color: '#ff0000' });
+                Swal.fire({ title: 'UPLOAD FAILED', text: error.message, icon: 'error', background: '#171923', color: '#ff4444' });
             }
         };
         reader.readAsArrayBuffer(file);
     });
 
     // ==========================================
-    // 4. AI STABILIZER & PRINT ENGINE
+    // 4. NAVIGATION & EXPORT LOGIC
     // ==========================================
-    function buildUI() {
+    function buildNavigation() {
         const days = [...new Set(masterData.map(item => item['Visit Day']))].filter(d => d).sort();
         const nav = document.getElementById('day-nav');
         nav.innerHTML = '';
         
         days.forEach(day => {
-            const btn = document.createElement('button');
-            btn.className = 'day-btn';
-            btn.innerText = `🖨️ PRINT ${day}`;
-            btn.onclick = () => AI_StabilizeAndPrint(day);
-            nav.appendChild(btn);
+            const card = document.createElement('div');
+            card.className = 'day-card';
+            
+            card.innerHTML = `
+                <h3>${day} OPERATIONS</h3>
+                <div class="action-group">
+                    <button class="action-btn btn-print" onclick="viewAndPrint('${day}')">🖨️ PDF / PRINT</button>
+                    <button class="action-btn btn-export" onclick="exportMasterExcel('${day}')">📊 EXPORT XLS</button>
+                </div>
+            `;
+            nav.appendChild(card);
         });
     }
 
-    function AI_StabilizeAndPrint(targetDay) {
-        // Step 1: Render the precise tables
+    function exportMasterExcel(targetDay) {
+        Swal.fire({ title: 'Compiling Report...', timer: 1000, didOpen: () => { Swal.showLoading() }, background: '#171923', color: '#d4af37' });
+        
+        const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
+        
+        // Filter rows to only contain required columns
+        const filteredData = dayData.map(row => {
+            let newRow = {};
+            displayColumns.forEach(col => {
+                newRow[col] = row[col] !== undefined ? row[col] : "";
+            });
+            return newRow;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(filteredData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, `Plan_${targetDay}`);
+        XLSX.writeFile(wb, `Master_Planner_${targetDay}.xlsx`);
+    }
+
+    // ==========================================
+    // 5. THE AI ISOLATED PRINT ENGINE
+    // ==========================================
+    function viewAndPrint(targetDay) {
+        renderScreenView(targetDay);
+        
+        // Give UI a millisecond to render on screen, then build isolated print frame
+        setTimeout(() => triggerIsolatedPrintEngine(targetDay), 300);
+    }
+
+    function renderScreenView(targetDay) {
         const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
         const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         const renderArea = document.getElementById('render-area');
-        renderArea.innerHTML = '';
+        renderArea.innerHTML = `<h2 style="color: #d4af37; text-align: center; font-size: 30px; margin-bottom: 30px;">PREVIEW: ${targetDay}</h2>`;
 
         routes.forEach(route => {
             const routeData = dayData.filter(row => row['Route Code'] === route);
             
             const title = document.createElement('div');
             title.className = 'route-title';
-            title.innerText = `DAY: ${targetDay} | ROUTE CODE: ${route}`;
+            title.innerText = `ROUTE CODE: ${route}`;
             renderArea.appendChild(title);
 
             const table = document.createElement('table');
@@ -334,11 +314,69 @@
             table.appendChild(tbody);
             renderArea.appendChild(table);
         });
+    }
 
-        // Step 2: Trigger secure print sequence
+    // THIS IS THE TRILLION-DOLLAR FIX: 100% ISOLATED CSS PRINTING
+    function triggerIsolatedPrintEngine(targetDay) {
+        const dayData = masterData.filter(row => row['Visit Day'] === targetDay);
+        const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
+        
+        let printHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                @page { size: A4 landscape; margin: 5mm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #000; }
+                table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 25px; page-break-inside: auto; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
+                th, td { border: 1.5pt solid #000; padding: 4px; word-wrap: break-word; overflow-wrap: break-word; text-align: center; font-size: 10pt; font-weight: 900; }
+                th { background-color: #d9d9d9 !important; -webkit-print-color-adjust: exact; text-transform: uppercase; }
+                
+                .print-header { background: #000 !important; color: #fff !important; font-size: 14pt; font-weight: 900; padding: 8px; margin-top: 10px; border: 1.5pt solid #000; -webkit-print-color-adjust: exact; page-break-before: always; }
+                .print-header:first-of-type { page-break-before: avoid; margin-top: 0; }
+            </style>
+        </head>
+        <body>
+        `;
+
+        routes.forEach(route => {
+            const routeData = dayData.filter(row => row['Route Code'] === route);
+            
+            printHTML += `<div class="print-header">DAY: ${targetDay} | ROUTE CODE: ${route}</div>`;
+            printHTML += `<table><thead><tr>`;
+            
+            // Headers
+            displayColumns.forEach(col => {
+                printHTML += `<th>${col.includes('__EMPTY') ? '' : col}</th>`;
+            });
+            printHTML += `</tr></thead><tbody>`;
+            
+            // Rows
+            routeData.forEach(row => {
+                printHTML += `<tr>`;
+                displayColumns.forEach(col => {
+                    printHTML += `<td>${row[col] !== undefined ? row[col] : ""}</td>`;
+                });
+                printHTML += `</tr>`;
+            });
+            printHTML += `</tbody></table>`;
+        });
+
+        printHTML += `</body></html>`;
+
+        // Inject into hidden iframe and print
+        const iframe = document.getElementById('printFrame');
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(printHTML);
+        doc.close();
+
+        // Allow DOM to load then trigger hardware print dialog
         setTimeout(() => {
-            window.print();
-        }, 800);
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }, 500);
     }
 </script>
 </body>
