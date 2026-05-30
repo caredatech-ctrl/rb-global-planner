@@ -96,11 +96,20 @@
         </div>
         <div class="dashboard-body">
             <div class="settings-panel">
+                
+                <div class="setting-group" style="background: #2a2d3a; padding: 15px; border-radius: 5px; border: 1px solid #d4af37;">
+                    <label style="color: #fff; font-size: 18px;">🎯 Select Route to Print</label>
+                    <select id="route-filter" onchange="updatePreview()">
+                        <option value="ALL">ALL ROUTES FOR DAY</option>
+                        <!-- Routes will be injected here automatically -->
+                    </select>
+                </div>
+
                 <div class="setting-group">
                     <label>Grid Auto-Fit Mode</label>
                     <select id="set-layout" onchange="updatePreview()">
                         <option value="fixed">AI Strict Confinement (Never Overflows Page)</option>
-                        <option value="auto">Natural Flow (Might Overflow if wide)</option>
+                        <option value="auto">Natural Flow (Let browser decide width)</option>
                     </select>
                 </div>
                 <div class="setting-group">
@@ -112,8 +121,12 @@
                     <input type="range" id="set-font" min="4" max="14" value="7.5" step="0.5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
-                    <label>Cell Padding (<span id="val-pad">2</span>px)</label>
-                    <input type="range" id="set-pad" min="1" max="10" value="2" oninput="updatePreview()">
+                    <label>Cell Padding (<span id="val-pad">3</span>px)</label>
+                    <input type="range" id="set-pad" min="1" max="10" value="3" oninput="updatePreview()">
+                </div>
+                <div class="setting-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 30px;">
+                    <input type="checkbox" id="set-wrap" onchange="updatePreview()" checked style="width: 20px; height: 20px;">
+                    <label style="margin: 0; color: #fff;">Prevent Text Wrapping (Excel Style)</label>
                 </div>
                 
                 <h3 style="color: #d4af37; border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px;">COLUMNS TO PRINT (Sorted via AI)</h3>
@@ -142,7 +155,7 @@
     let sortedColumns = [];
     let activeDay = "";
 
-    // EXACT STRICT ORDER: Forces names to the front, data to the back.
+    // STRICT ORDER
     const STRICT_COLUMN_ORDER = [
         "Route Name",
         "Customer Code",
@@ -266,9 +279,18 @@
         activeDay = day;
         document.getElementById('print-dashboard').classList.remove('hidden');
         
-        // Default Hidden Columns: MTD and unneeded routes (BUT Customer Code and Route Name stay visible)
-        const defaultHidden = ["Visit Day", "Cycle route description", "MTD", "Route Code"];
+        // Populate Single-Route Selector
+        const routeSelect = document.getElementById('route-filter');
+        routeSelect.innerHTML = '<option value="ALL">ALL ROUTES FOR DAY</option>';
+        const dayData = masterData.filter(row => row['Visit Day'] === activeDay);
+        const uniqueRoutes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         
+        uniqueRoutes.forEach(r => {
+            if(r) routeSelect.innerHTML += `<option value="${r}">${r}</option>`;
+        });
+
+        // Default Hidden Columns
+        const defaultHidden = ["Visit Day", "Cycle route description", "MTD", "Route Code"];
         const colContainer = document.getElementById('column-toggles');
         colContainer.innerHTML = '';
         
@@ -295,6 +317,8 @@
         const zoomLevel = document.getElementById('set-zoom').value;
         const fSize = document.getElementById('set-font').value;
         const pad = document.getElementById('set-pad').value;
+        const preventWrap = document.getElementById('set-wrap').checked;
+        const selectedRouteFilter = document.getElementById('route-filter').value;
         
         document.getElementById('val-zoom').innerText = zoomLevel;
         document.getElementById('val-font').innerText = fSize;
@@ -304,19 +328,23 @@
         const selectedCols = Array.from(checkboxes).map(cb => cb.value);
 
         const dayData = masterData.filter(row => row['Visit Day'] === activeDay);
-        const routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         
-        let html = generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode);
+        // Filter by Single Route if selected
+        let routes = [...new Set(dayData.map(row => row['Route Code']))].sort();
+        if (selectedRouteFilter !== "ALL") {
+            routes = [selectedRouteFilter];
+        }
+        
+        let html = generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode, preventWrap);
         
         const paper = document.getElementById('live-preview-paper');
         paper.style.zoom = zoomLevel / 100;
         paper.innerHTML = html;
     }
 
-    function generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode) {
+    function generateTableHTML(routes, dayData, selectedCols, fSize, pad, layoutMode, preventWrap) {
         let html = '';
         
-        // Core Table CSS
         const tableCSS = `
             width: 100%; 
             max-width: 100%; 
@@ -331,18 +359,16 @@
             font-weight: bold; 
             text-align: center; 
             font-family: Arial, sans-serif;
-            word-wrap: break-word; 
-            word-break: break-word; 
-            white-space: normal;
+            ${preventWrap ? 'white-space: nowrap;' : 'word-break: break-word; hyphens: auto; white-space: normal;'}
         `;
 
-        // AI Column Resizer (Allocates intelligent widths to cells if using fixed layout)
+        // AI Dynamic Column Resizer
         let colGroupHTML = '<colgroup>';
         selectedCols.forEach(col => {
             let colLower = col.toLowerCase();
-            let width = '6%'; // Default shrink for numbers
+            let width = '4.5%'; // Default shrink for products/numbers to save space
             if(colLower.includes('customer') || colLower.includes('name')) {
-                width = '14%'; // Max space for names
+                width = '14%'; // Max space for names to prevent squishing
             } else if(colLower.includes('route')) {
                 width = '10%'; // Mid space for routes
             }
@@ -358,11 +384,9 @@
             html += `<div style="font-size: 16pt; font-weight: bold; font-family: Arial, sans-serif; margin-bottom: 5px; page-break-before: always; text-align: left;">ROUTE ${route} : ${routeName} : ${cycleDesc}</div>`;
             html += `<table style="${tableCSS}">`;
             
-            // Only inject the sizing grid if Layout is Fixed
             if(layoutMode === 'fixed') html += colGroupHTML;
             
             html += `<thead><tr>`;
-            
             selectedCols.forEach(col => {
                 html += `<th style="${cellCSS} background-color: #E0E0E0 !important; text-transform: uppercase;">${col.includes('__EMPTY') ? '' : col}</th>`;
             });
