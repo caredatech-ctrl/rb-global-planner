@@ -211,9 +211,9 @@
     let sortedColumns = [];
     let activeDay = "";
 
-    // STRICT ORDER: MAY FULL MONTH inserted immediately after Mini
+    // STRICT ORDER: MTD ADDED AFTER MINI
     const STRICT_COLUMN_ORDER = [
-        "Route Name", "Customer Code", "Mini", "MAY FULL MONTH", "MTD", "110g NCP OG", "110g NCP SC/Cool", 
+        "Route Name", "Customer Code", "Mini", "MTD", "110g NCP OG", "110g NCP SC/Cool", 
         "80g NCP SC/OG/ Cool", "Harpic 225ml OG", "Harpic 450ml TC", "Veet Cream 18g/32g", 
         "Veet Lotion 40ml", "Mortein 300 ml", "LED Comp", "30N", "Coil"
     ];
@@ -379,6 +379,7 @@
         const uniqueRoutes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         uniqueRoutes.forEach(r => { if(r) routeSelect.innerHTML += `<option value="${r}">${r}</option>`; });
 
+        // MTD IS NO LONGER HIDDEN BY DEFAULT
         const defaultHidden = ["Visit Day", "Cycle route description", "Route Code"];
         const colContainer = document.getElementById('column-toggles');
         colContainer.innerHTML = '';
@@ -450,13 +451,13 @@
             let width = '4.5%'; 
             
             if(colLower === 'mini' || colLower === 'store name') {
-                width = '12%'; 
+                width = '12%'; // Shrunk down to just fit the name
             } else if(colLower.includes('customer') || colLower.includes('code')) {
                 width = '8%'; 
             } else if(colLower.includes('route')) {
                 width = '9%'; 
-            } else if(colLower === 'mtd' || colLower.includes('month')) {
-                width = '6%'; // Allocated 6% width for MAY FULL MONTH & MTD
+            } else if(colLower === 'mtd') {
+                width = '5%';
             }
             colGroupHTML += `<col style="width: ${width};">`;
         });
