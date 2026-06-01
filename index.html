@@ -173,8 +173,8 @@
                     <input type="range" id="set-zoom" min="50" max="150" value="80" step="5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
-                    <label>Data Font Size (<span id="val-font">7.5</span>pt)</label>
-                    <input type="range" id="set-font" min="4" max="14" value="7.5" step="0.5" oninput="updatePreview()">
+                    <label>Data Font Size (<span id="val-font">7.0</span>pt)</label>
+                    <input type="range" id="set-font" min="4" max="14" value="7.0" step="0.5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
                     <label>Cell Padding (<span id="val-pad">3</span>px)</label>
@@ -233,6 +233,7 @@
             if(!auto) {
                 const welcome = document.getElementById('welcome-screen');
                 welcome.classList.remove('hidden');
+                
                 setTimeout(() => {
                     welcome.style.opacity = '0';
                     setTimeout(() => {
@@ -255,7 +256,6 @@
         location.reload();
     }
 
-    // --- THE FIX: LOADING INDICATOR FOR DATABASE DOWNLOAD ---
     async function fetchLiveDatabase() {
         Swal.fire({
             title: 'ESTABLISHING SECURE LINK',
@@ -394,9 +394,7 @@
             `;
         });
         
-        // Explicitly uncheck the wrap option to ensure default behavior is off per request
         document.getElementById('set-wrap').checked = false;
-        
         updatePreview();
     }
 
@@ -434,7 +432,6 @@
         let html = '';
         const tableCSS = `width: 100%; max-width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: ${layoutMode};`;
         
-        // CRITICAL FIX: To prevent mid-word breaks while allowing full words to wrap to next line
         const wrapCSS = preventWrap ? 'white-space: nowrap;' : 'white-space: normal; word-break: normal; overflow-wrap: normal; hyphens: none;';
         
         const cellCSS = `
@@ -447,16 +444,15 @@
             ${wrapCSS}
         `;
 
-        // THE MASTER COLUMN WIDTH ALLOCATOR
         let colGroupHTML = '<colgroup>';
         selectedCols.forEach(col => {
             let colLower = col.toLowerCase();
-            let width = '4%'; // Slim product columns
+            let width = '4%'; 
             
             if(colLower.includes('mini') || (colLower.includes('name') && !colLower.includes('route'))) {
-                width = '18%'; // Extrawide for Store Names
+                width = '18%'; 
             } else if(colLower.includes('customer') || colLower.includes('code')) {
-                width = '8%'; // Snug fit for LHRXXXXX
+                width = '8%'; 
             } else if(colLower.includes('route')) {
                 width = '10%'; 
             }
@@ -483,7 +479,16 @@
             routeData.forEach(row => {
                 html += `<tr>`;
                 selectedCols.forEach(col => {
-                    html += `<td style="${cellCSS}">${row[col] !== undefined ? row[col] : ""}</td>`;
+                    // --- AI DECIMAL STRIPPER: Removes everything after the dot ---
+                    let val = row[col];
+                    if(val !== undefined && val !== null && val !== "") {
+                        if(!isNaN(val)) {
+                            val = Math.round(Number(val));
+                        }
+                    } else {
+                        val = "";
+                    }
+                    html += `<td style="${cellCSS}">${val}</td>`;
                 });
                 html += `</tr>`;
             });
