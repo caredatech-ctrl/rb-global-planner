@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RECKITT ENGINE - VIP COMMAND CENTER</title>
+    <title>RECKITT ENGINE - VIP GLASSMORPHISM</title>
     <!-- VIP Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -169,12 +169,12 @@
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>Print Preview Scale (<span id="val-zoom">80</span>%)</label>
-                    <input type="range" id="set-zoom" min="50" max="150" value="80" step="5" oninput="updatePreview()">
+                    <label>Print Preview Scale (<span id="val-zoom">90</span>%)</label>
+                    <input type="range" id="set-zoom" min="50" max="150" value="90" step="5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
-                    <label>Data Font Size (<span id="val-font">7.0</span>pt)</label>
-                    <input type="range" id="set-font" min="4" max="14" value="7.0" step="0.5" oninput="updatePreview()">
+                    <label>Data Font Size (<span id="val-font">8.5</span>pt)</label>
+                    <input type="range" id="set-font" min="4" max="16" value="8.5" step="0.5" oninput="updatePreview()">
                 </div>
                 <div class="setting-group">
                     <label>Cell Padding (<span id="val-pad">3</span>px)</label>
@@ -211,8 +211,9 @@
     let sortedColumns = [];
     let activeDay = "";
 
+    // STRICT ORDER: MTD ADDED AFTER MINI
     const STRICT_COLUMN_ORDER = [
-        "Route Name", "Customer Code", "Mini", "110g NCP OG", "110g NCP SC/Cool", 
+        "Route Name", "Customer Code", "Mini", "MTD", "110g NCP OG", "110g NCP SC/Cool", 
         "80g NCP SC/OG/ Cool", "Harpic 225ml OG", "Harpic 450ml TC", "Veet Cream 18g/32g", 
         "Veet Lotion 40ml", "Mortein 300 ml", "LED Comp", "30N", "Coil"
     ];
@@ -233,7 +234,6 @@
             if(!auto) {
                 const welcome = document.getElementById('welcome-screen');
                 welcome.classList.remove('hidden');
-                
                 setTimeout(() => {
                     welcome.style.opacity = '0';
                     setTimeout(() => {
@@ -379,7 +379,8 @@
         const uniqueRoutes = [...new Set(dayData.map(row => row['Route Code']))].sort();
         uniqueRoutes.forEach(r => { if(r) routeSelect.innerHTML += `<option value="${r}">${r}</option>`; });
 
-        const defaultHidden = ["Visit Day", "Cycle route description", "MTD", "Route Code"];
+        // MTD IS NO LONGER HIDDEN BY DEFAULT
+        const defaultHidden = ["Visit Day", "Cycle route description", "Route Code"];
         const colContainer = document.getElementById('column-toggles');
         colContainer.innerHTML = '';
         
@@ -438,7 +439,7 @@
             border: 1.5pt solid #000; 
             padding: ${pad}px; 
             font-size: ${fSize}pt; 
-            font-weight: bold; 
+            font-weight: 900 !important; 
             text-align: center; 
             font-family: Arial, sans-serif;
             ${wrapCSS}
@@ -447,14 +448,16 @@
         let colGroupHTML = '<colgroup>';
         selectedCols.forEach(col => {
             let colLower = col.toLowerCase();
-            let width = '4%'; 
+            let width = '4.5%'; 
             
-            if(colLower.includes('mini') || (colLower.includes('name') && !colLower.includes('route'))) {
-                width = '18%'; 
+            if(colLower === 'mini' || colLower === 'store name') {
+                width = '12%'; // Shrunk down to just fit the name
             } else if(colLower.includes('customer') || colLower.includes('code')) {
                 width = '8%'; 
             } else if(colLower.includes('route')) {
-                width = '10%'; 
+                width = '9%'; 
+            } else if(colLower === 'mtd') {
+                width = '5%';
             }
             colGroupHTML += `<col style="width: ${width};">`;
         });
@@ -472,19 +475,16 @@
             
             html += `<thead><tr>`;
             selectedCols.forEach(col => {
-                html += `<th style="${cellCSS} background-color: #E0E0E0 !important; text-transform: uppercase;">${col.includes('__EMPTY') ? '' : col}</th>`;
+                html += `<th style="${cellCSS} background-color: #E0E0E0 !important; text-transform: uppercase; font-weight: 900 !important;">${col.includes('__EMPTY') ? '' : col}</th>`;
             });
             html += `</tr></thead><tbody>`;
             
             routeData.forEach(row => {
                 html += `<tr>`;
                 selectedCols.forEach(col => {
-                    // --- AI DECIMAL STRIPPER: Removes everything after the dot ---
                     let val = row[col];
                     if(val !== undefined && val !== null && val !== "") {
-                        if(!isNaN(val)) {
-                            val = Math.round(Number(val));
-                        }
+                        if(!isNaN(val)) val = Math.round(Number(val));
                     } else {
                         val = "";
                     }
