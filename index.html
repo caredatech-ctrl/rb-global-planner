@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RECKITT ENGINE - VIP GLASSMORPHISM</title>
-    <!-- VIP Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -106,13 +105,11 @@
 </head>
 <body>
 
-    <!-- VIP WELCOME SCREEN -->
     <div id="welcome-screen" class="hidden">
         <h1 class="glowing-name">VIP WELCOME DILAWAR ALI</h1>
         <div class="welcome-sub">INITIALIZING RECKITT ENGINE...</div>
     </div>
 
-    <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-box glass-panel">
             <div class="reckitt-logo">RECKITT</div>
@@ -123,7 +120,6 @@
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN -->
     <div id="app-screen" class="hidden">
         <div class="header-panel glass-panel">
             <div class="reckitt-logo" style="font-size: 32px; margin: 0; text-shadow: 0 0 15px var(--neon-pink);">RECKITT COMMAND CENTER</div>
@@ -142,7 +138,6 @@
         <div id="day-nav" class="day-grid"></div>
     </div>
 
-    <!-- MASTER PRINT DASHBOARD -->
     <div id="print-dashboard" class="hidden">
         <div class="dashboard-header glass-panel" style="border-radius: 0; border: none; border-bottom: 2px solid var(--neon-pink);">
             <h2 style="margin: 0; color: #fff; text-shadow: 0 0 15px var(--neon-pink); letter-spacing: 1px;">🎛️ AI PRINT STABILIZER (GLASS MODE)</h2>
@@ -195,7 +190,6 @@
         </div>
     </div>
 
-    <!-- INVISIBLE HARDWARE PRINT ENGINE -->
     <iframe id="hardwarePrintFrame"></iframe>
 
 <script>
@@ -485,6 +479,11 @@
                     let val = row[col];
                     if(val !== undefined && val !== null && val !== "") {
                         if(!isNaN(val)) val = Math.round(Number(val));
+                        
+                        // NEW LOGIC TO CONVERT ZEROS TO EMPTY
+                        if(val === 0 || val === "0") {
+                            val = "";
+                        }
                     } else {
                         val = "";
                     }
